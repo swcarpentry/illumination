@@ -15,20 +15,27 @@ def main(args):
     if seed is not None:
         np.random.seed(seed)
 
-    # Rise linearly from 0.0 at each end to 1.0 in the center.
-    saw = np.linspace(0, 1, (size+1)/2)
-    saw = np.concatenate((saw, saw[-2::-1]))
-
-    # Multiply two of those at right angles to make a pyramid.
-    pyr = np.outer(saw, saw)
-
-    # Result is the probability a cell is full or empty.
-    result = threshold * np.random.random((size, size)) < pyr
+    result = generate(size, threshold)
 
     # Output as a CSV grid of 1's and 0's.
-    result = result.astype(int)
     np.savetxt(sys.stdout.buffer, result, delimiter=',', fmt='%1d')
 
+
+def generate(size, threshold):
+    '''Generate size*size sampled pyramid of 0s and 1s.'''
+
+    # Rise linearly from 0.0 at each end to 1.0 in the center.
+    triangle = np.linspace(0, 1, (size+1)/2)
+    triangle = np.concatenate((triangle, triangle[-2::-1]))
+
+    # Multiply two of those at right angles to make a pyramid.
+    pyramid = np.outer(triangle, triangle)
+
+    # Pyramid determines probability that a cell is full or empty.
+    result = (threshold * np.random.random((size, size))) < pyramid
+    result = result.astype(int)
+
+    return result
 
 def parse_args(args):
     '''Parse command-line arguments.'''
